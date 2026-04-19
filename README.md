@@ -84,7 +84,7 @@ This stack now provides both:
   - itself
   - node-exporter
   - cAdvisor
-- Used the Prometheus targets page to verify scrape health
+- Used the Prometheus targets page and API to verify scrape health
 - Learned the difference between:
   - browser access via `localhost:<port>`
   - service-to-service access via Docker service names
@@ -116,7 +116,11 @@ This stack now provides both:
 - Confirmed cAdvisor UI loads successfully
 - Confirmed Prometheus scrapes cAdvisor successfully
 - Verified cAdvisor metrics in Grafana with PromQL queries
-- Queried container memory and CPU metrics successfully
+- Validated:
+  - per-container memory metrics
+  - per-container CPU metrics
+  - aggregate network receive/transmit metrics
+  - network receive/transmit by interface
 
 ---
 
@@ -334,18 +338,24 @@ This is useful for comparing:
 ### Raw Network Transmit Metric
     container_network_transmit_bytes_total{job="cadvisor"}
 
-### Per-Container Network Receive
-    sum by (id) (
-      rate(container_network_receive_bytes_total{
-        job="cadvisor"
-      }[5m])
+### Aggregate Network Receive
+    sum(
+      rate(container_network_receive_bytes_total{job="cadvisor"}[5m])
     )
 
-### Per-Container Network Transmit
-    sum by (id) (
-      rate(container_network_transmit_bytes_total{
-        job="cadvisor"
-      }[5m])
+### Aggregate Network Transmit
+    sum(
+      rate(container_network_transmit_bytes_total{job="cadvisor"}[5m])
+    )
+
+### Network Receive by Interface
+    sum by (interface) (
+      rate(container_network_receive_bytes_total{job="cadvisor"}[5m])
+    )
+
+### Network Transmit by Interface
+    sum by (interface) (
+      rate(container_network_transmit_bytes_total{job="cadvisor"}[5m])
     )
 
 ---
@@ -388,6 +398,17 @@ node-exporter shows host-level metrics, while cAdvisor shows container-level met
 ### 5. Grafana Explore Is Great for Learning
 Running raw PromQL queries in Grafana Explore is a great way to understand what metrics exist before building dashboards.
 
+### 6. Local Environment Quirks Matter
+In this Docker Desktop + WSL setup:
+
+- per-container CPU metrics were validated
+- per-container memory metrics were validated
+- aggregate network metrics were validated
+- interface-level network metrics were validated
+- per-container network metrics were not exposed in a clean Docker-ID-split form
+
+That limitation is environment-specific and is still useful to document as part of the lab.
+
 ---
 
 ## Current Status
@@ -411,15 +432,15 @@ Current status:
 
 ## Next Step
 
-### Fix External Service Scraping
-The next milestone is to correctly connect Prometheus to external services such as:
+### Continue Building the AI Observability Lab
+The next milestone is to build on this monitoring foundation by adding more observability-focused components such as:
 
-- Lighthouse metrics
-- Nethermind metrics
+- cleaner Grafana dashboards
+- screenshots and documentation
+- future GPU exporters
+- future inference service monitoring
 
-These targets are currently down because Prometheus is running inside Docker and cannot scrape host services using `localhost`.
-
-This will require configuring Prometheus to use reachable addresses for those services.
+The current Compose-based monitoring stack is now the base layer for the next phase of the project.
 
 ---
 
@@ -429,8 +450,8 @@ This will require configuring Prometheus to use reachable addresses for those se
 - Clean up project structure
 - Add screenshots to the repository
 - Add dashboard documentation
-- Fix Lighthouse metrics scraping
-- Fix Nethermind metrics scraping
+- Build a cleaner cAdvisor / Docker monitoring dashboard
+- Keep improving PromQL fluency
 
 ### Next Layer
 - Add more polished Grafana dashboards
