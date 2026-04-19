@@ -84,6 +84,7 @@ This stack now provides both:
   - itself
   - node-exporter
   - cAdvisor
+- Removed old external scrape targets that were no longer relevant
 - Used the Prometheus targets page and API to verify scrape health
 - Learned the difference between:
   - browser access via `localhost:<port>`
@@ -136,7 +137,7 @@ This stack now provides both:
 - Grafana:
   - `http://localhost:3001`
 - Prometheus:
-  - `http://localhost:9090`
+  - `http://localhost:9091`
 - cAdvisor:
   - `http://localhost:8088`
 
@@ -183,7 +184,7 @@ Docker port publishing maps a port on the host machine to a port inside the cont
 Examples:
 
 - `3001:3000`
-- `9090:9090`
+- `9091:9090`
 - `8088:8080`
 
 This means:
